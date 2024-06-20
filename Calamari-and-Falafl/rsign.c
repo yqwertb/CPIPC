@@ -1,6 +1,6 @@
 #include "rsign.h"
 #include "seedtree.h"
-
+// 用的lattice_BG_instantiation.h
 
 static inline
 uint64_t rdtsc(){
@@ -15,15 +15,36 @@ uint64_t restarts  = 0;
 uint64_t restarts2 = 0; 
 
 void keygen(unsigned char *pk, unsigned char *sk){
+	/*
+		typedef struct {
+			polyvecl s;
+			polyveck e;
+		} GRPELTS1;
+	*/
 	GRPELTS1 s;
-	init_grpelt(s);
+	init_grpelt(s);  //初始化大整数变量 s
 
-	RAND_bytes(sk,SEED_BYTES);
-
+	/*	
+		生成随机数存在buffer内 openssl库内的函数
+		RAND_bytes(buffer, sizeof(buffer));
+		**buf：**用于存储生成的随机字节序列的缓冲区的指针。
+		**num：**要生成的随机字节数。
+	*/
+	RAND_bytes(sk,SEED_BYTES); 
+	/*
+		lattice_BG_instantiation.h里的
+		最后修改了s的内容
+	 */
 	sample_S1(s,sk);
 	
-	public_key *X = (public_key *) pk;
-	derive_pk(X,s);
+	/*
+		typedef struct public_key {
+			fp A; // Montgomery coefficient: represents y^2 = x^3 + Ax^2 + x 
+		} public_key；
+
+	 */
+	public_key *X = (public_key *) pk; //赋值
+	derive_pk(X,s); //对X进行的操作
 
 	clear_grpelt(s);
 }
