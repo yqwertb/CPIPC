@@ -21,8 +21,8 @@ void keygen(unsigned char *pk, unsigned char *sk){
 			polyveck e;
 		} GRPELTS1;
 	*/
-	GRPELTS1 s;
-	init_grpelt(s);  //初始化大整数变量 s
+	GRPELTS1 s; // 一个结构体 两个多项式向量 l=3 k=4
+	init_grpelt(s);  //
 
 	/*	
 		生成随机数存在buffer内 openssl库内的函数
@@ -49,7 +49,8 @@ void keygen(unsigned char *pk, unsigned char *sk){
 	clear_grpelt(s);
 }
 
-#ifdef BG
+// 有bg
+#ifdef BG  
 void commit(const XELT *R, const unsigned char *randomness, const unsigned char *salt, unsigned char *commitment){
 	unsigned char buf[512 + 3*SEED_BYTES];
 	memcpy(buf+512,randomness,SEED_BYTES);
@@ -210,14 +211,19 @@ int rsign(const unsigned char *sk, const int64_t I, const unsigned char *pks, co
 		init_grpelt(r[i]);
 	}
 
-	unsigned char *seed_tree = malloc((2*EXECUTIONS-1)*SEED_BYTES);
-	unsigned char *seeds = seed_tree + (EXECUTIONS-1)*SEED_BYTES;
+	unsigned char *seed_tree = malloc((2*EXECUTIONS-1)*SEED_BYTES); //种子树分配内存
+	unsigned char *seeds = seed_tree + (EXECUTIONS-1)*SEED_BYTES; //指向root
 
 	#define BUF_LEN (SEED_BYTES*(rings+2))
 	unsigned char seedbuf[SEED_BUF_BYTES];
 	unsigned char buf[BUF_LEN];
 	unsigned char commitments[HASH_BYTES*rings_round_up];
 	unsigned char *commitment_randomness = malloc(EXECUTIONS*SEED_BYTES);
+	// typedef struct {
+	// 	polyveck all;
+	// 	polyveck high;
+	// 	polyveck low;
+	// } XELT;
 	XELT R;
 	unsigned char *roots = malloc(HASH_BYTES*(EXECUTIONS+2));
 	unsigned char *paths = malloc(HASH_BYTES*EXECUTIONS*logN);
@@ -250,9 +256,10 @@ int rsign(const unsigned char *sk, const int64_t I, const unsigned char *pks, co
 		(*ctr)  = EXECUTIONS + i; 
 		EXPAND(seedbuf, SEED_BUF_BYTES, buf, BUF_LEN);
 
-		// sample r
+		// sample r (3)
 		sample_S2_with_seed(buf + SEED_BYTES*rings, r[i]);
 
+		// #define PREP_GRPELT polyveck
 		PREP_GRPELT pg;
 		do_half_action(&pg,r[i]);
 
@@ -263,24 +270,28 @@ int rsign(const unsigned char *sk, const int64_t I, const unsigned char *pks, co
 		for (int j = 0; j < rings; ++j)
 		{
 			finish_action(&R,(public_key*) (pks + j*sizeof(public_key)), &pg);
+			// (3)(b)
 			commit(&R,buf + j*SEED_BYTES, RSIG_SALT(sig), commitments + j*HASH_BYTES);
 		}
 
 		// generate dummy commitments
 		EXPAND(buf + SEED_BYTES * (rings +1), SEED_BYTES, commitments + rings*HASH_BYTES, (rings_round_up-rings)*HASH_BYTES);
 
+		// (3)(c)
 		build_tree_and_path(commitments, logN, I, roots + i*HASH_BYTES, paths + i*HASH_BYTES*logN );
 	}
 
 	// generate challenge
 	EXPAND(roots, HASH_BYTES*(EXECUTIONS+2), RSIG_CHALLENGE(sig), SEED_BYTES);
 	unsigned char *challenge = malloc(EXECUTIONS);
+	// (5)
 	derive_challenge(RSIG_CHALLENGE(sig),challenge);
 
 	int zeros = 0;
 	int ones = 0;
 	for (int i = 0; i < EXECUTIONS; ++i)
-	{
+	{	
+		// (5)(a)
 		if (challenge[i] == 0)
 		{
 			// compute and pack z in signature
@@ -309,6 +320,7 @@ int rsign(const unsigned char *sk, const int64_t I, const unsigned char *pks, co
 		}
 	}
 
+	// (6)
 	release_seeds(seed_tree, EXECUTIONS, challenge, RSIG_SEEDS(sig,logN) , sig_len );
 	(*sig_len) *= SEED_BYTES;
 	(*sig_len) += RSIG_SEEDS(0,logN);

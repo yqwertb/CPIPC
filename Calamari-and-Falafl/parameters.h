@@ -35,6 +35,7 @@
 #endif
 
 #define do_action(out, in, g) { \
+	// #define PREP_GRPELT polyveck
 	PREP_GRPELT pg; \
 	do_half_action(&pg, g); \
 	finish_action(out, in,&pg); \

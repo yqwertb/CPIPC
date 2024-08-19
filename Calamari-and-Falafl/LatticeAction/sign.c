@@ -32,6 +32,7 @@ void expand_mat(polyvecl mat[K], const uint8_t rho[SEEDBYTES]) {
     for(j = 0; j < L; ++j)
       poly_uniform_aes(&mat[i].vec[j], &state, (i << 8) + j);
 }
+// 对随机系数进行剔除
 #elif L == 2 && K == 3
 void expand_mat(polyvecl mat[3], const uint8_t rho[SEEDBYTES])
 {
@@ -48,7 +49,7 @@ void expand_mat(polyvecl mat[3], const uint8_t rho[SEEDBYTES])
                   &t1,
                   rho, 512, 513, 0, 0);
 }
-#elif L == 3 && K == 4
+#elif L == 3 && K == 4 //MODE是2 
 void expand_mat(polyvecl mat[4], const uint8_t rho[SEEDBYTES])
 {
   poly_uniform_4x(&mat[0].vec[0],

@@ -6,6 +6,7 @@
 #include "poly.h"
 
 /* Vectors of polynomials of length L */
+// 长度为 L 的多项式向量
 typedef struct {
   poly vec[L];
 } polyvecl;

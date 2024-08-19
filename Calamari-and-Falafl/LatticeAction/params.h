@@ -15,6 +15,8 @@
 #define GAMMA2 (GAMMA1/2)
 #define ALPHA (2*GAMMA2)
 
+// MODE 是 2
+
 #if MODE == 1
 #define K 3
 #define L 2

@@ -13,13 +13,14 @@
 	#define sign lrsign
 	#define verify lrverify
 	#define SIG_BYTES LRSIG_BYTES
-#else
+#else  
+// rsign是基础
  	#define sign rsign
 	#define verify rverify
 	#define SIG_BYTES RSIG_BYTES
 #endif
 
-#define LOG_N LOG(KEYGENS)
+#define LOG_N LOG(KEYGENS) //2
 
 static inline
 uint64_t rdtsc(){
@@ -33,7 +34,10 @@ uint64_t rdtsc(){
 extern uint64_t restarts;
 
 #define PS(x) ((x > Q/2)? ((int)x-Q):((int) x))
-
+// #ifdef LATTICE
+// 	#include "lattice_BG_instantiation.h"
+// 	#define EXECUTIONS 1749  
+// 	#define ZEROS      16  
 int main(int argc, char const *argv[])
 {
 	init_action();

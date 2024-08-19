@@ -22,6 +22,7 @@ static const public_key X0 = {0};
 
 #define PREP_GRPELT polyveck
 
+//多项式向量
 polyvecl mat[K];
 polyvecl Bmat[K];
 
